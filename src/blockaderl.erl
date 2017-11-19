@@ -10,10 +10,10 @@
          containers_stop/4,
          containers_restart/4,
          containers_kill/4,
-         network_state/5
-         %% add_container/4,
-         %% partition/4,
-         %% delete_partitions/4,
+         network_state/5,
+         partitions/4,
+         delete_partitions/3,
+         add_containers/4
         ]).
 
 list(Host, Port) ->
@@ -89,6 +89,37 @@ network_state(Host, Port, BlockadeName, NetworkState, ContainersNames) ->
             Error
     end.
 
+partitions(Host, Port, BlockadeName, Partitions) ->
+    Path = BlockadeName ++ "/partitions",
+    Content = #{partitions => Partitions},
+    case http_post(Host, Port, Path, Content) of
+        {ok, {{_, 204, _}, _, _}} ->
+            ok;
+        {ok, {{_, 400, _}, _, _}} ->
+            {error, partitions_must_be_a_list_of_lists};
+        Error ->
+            Error
+    end.
+
+delete_partitions(Host, Port, BlockadeName) ->
+    Path = BlockadeName ++ "/partitions" ,
+    case http_delete(Host, Port, Path) of
+        {ok, {{_, 204, _}, _, _}} ->
+            ok;
+        Error ->
+            Error
+    end.
+
+add_containers(Host, Port, BlockadeName, ContainersNames) ->
+    Path = BlockadeName,
+    Content = #{containers => ContainersNames},
+    case http_put(Host, Port, Path, Content) of
+        {ok, {{_, 204, _}, _, _}} ->
+            ok;
+        Error ->
+            Error
+    end.
+
 %% priv
 containers_action(Host, Port, BlockadeName, Action, ContainersNames) ->
     Path = BlockadeName ++ "/action",
@@ -125,6 +156,13 @@ http_post(Host, Port, Path, Body) ->
     ContentType = "application/json",
     Json = jsx:encode(Body),
     httpc:request(post, {Url, Headers, ContentType, Json}, [], []).
+
+http_put(Host, Port, Path, Body) ->
+    Url = url(Host, Port, Path),
+    Headers = [],
+    ContentType = "application/json",
+    Json = jsx:encode(Body),
+    httpc:request(put, {Url, Headers, ContentType, Json}, [], []).
 
 http_delete(Host, Port, Path) ->
     Url = url(Host, Port, Path),
