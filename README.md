@@ -9,4 +9,4 @@ Build
     $ rebar3 compile
 
 # run blockade
-unbalanced@hendrix ~/p/reconnections> blockade -d .blockade/ daemon
+blockade -d .blockade/ daemon
