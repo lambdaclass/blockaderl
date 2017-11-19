@@ -5,15 +5,22 @@
          delete/3,
          list/2,
          get/3,
+
          containers_ips/3,
          containers_start/4,
          containers_stop/4,
          containers_restart/4,
          containers_kill/4,
+
          network_state/5,
          partitions/4,
          delete_partitions/3,
-         add_containers/4
+         add_containers/4,
+
+         chaos_start/4,
+         chaos_stop/3,
+         chaos_status/3,
+         chaos_update/4
         ]).
 
 list(Host, Port) ->
@@ -120,6 +127,52 @@ add_containers(Host, Port, BlockadeName, ContainersNames) ->
             Error
     end.
 
+chaos_start(Host, Port, BlockadeName, Config) ->
+    Path = BlockadeName ++ "/chaos",
+    case http_post(Host, Port, Path, Config) of
+        {ok, {{_, 201, _}, _, _}} ->
+            ok;
+        Error ->
+            Error
+    end.
+
+chaos_stop(Host, Port, BlockadeName) ->
+    Path = BlockadeName ++ "/chaos",
+    case http_delete(Host, Port, Path) of
+        {ok, {{_, 200, _}, _, _}} ->
+            ok;
+        {ok, {{_, 500, _}, _, "Chaos is not associated with " ++ BlockadeName}} ->
+            {error, chaos_not_started};
+        {ok, {{_, 404, _}, _, _}} ->
+            {error, not_found};
+        Error ->
+            Error
+    end.
+
+
+chaos_status(Host, Port, BlockadeName) ->
+    Path = BlockadeName ++ "/chaos",
+    Result = http_get(Host, Port, Path),
+    case Result of
+        {ok, {{_, 200, "OK"}, _Headers, JsonString}} ->
+            JsonBinary = erlang:list_to_binary(JsonString),
+            Content = jsx:decode(JsonBinary, [return_maps]),
+            {ok, Content};
+       {ok, {{_, 404, _}, _, _}} ->
+            {error, not_found};
+        Error ->
+            Error
+    end.
+
+chaos_update(Host, Port, BlockadeName, Config) ->
+    Path = BlockadeName ++ "/chaos",
+    case http_put(Host, Port, Path, Config) of
+        {ok, {{_, 200, _}, _, _}} ->
+            ok;
+        Error ->
+            Error
+    end.
+
 %% priv
 containers_action(Host, Port, BlockadeName, Action, ContainersNames) ->
     Path = BlockadeName ++ "/action",
@@ -128,6 +181,8 @@ containers_action(Host, Port, BlockadeName, Action, ContainersNames) ->
     case http_post(Host, Port, Path, Content) of
         {ok, {{_, 204, _}, _, _}} ->
             ok;
+        {ok, {{_, 404, _}, _, _}} ->
+            {error, not_found};
         Error ->
             Error
     end.
