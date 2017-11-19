@@ -24,7 +24,14 @@
         ]).
 
 list(Host, Port) ->
-    http_get(Host, Port).
+    case http_get(Host, Port) of
+        {ok, {{_, 200, _}, _, JsonString}} ->
+            JsonBinary = erlang:list_to_binary(JsonString),
+            Content = jsx:decode(JsonBinary, [return_maps]),
+            {ok, Content};
+        Error ->
+            Error
+    end.
 
 create(Host, Port, BlockadeName, Config) ->
     case http_post(Host, Port, BlockadeName, Config) of
