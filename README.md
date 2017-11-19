@@ -1,12 +1,7 @@
 blockaderl
 =====
 
-An OTP application
+API for [blockade](https://github.com/worstcase/blockade)
 
-Build
------
-
-    $ rebar3 compile
-
-# run blockade
-blockade -d .blockade/ daemon
+# Usage
+WIP
