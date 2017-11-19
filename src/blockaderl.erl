@@ -198,6 +198,9 @@ containers_action(Host, Port, BlockadeName, Action, ContainersNames) ->
 blockade_path() ->
     "blockade".
 
+url(Host, Port) when is_binary(Host) ->
+    HostString = erlang:binary_to_list(Host),
+    url(HostString, Port);
 url(Host, Port) ->
     "http://" ++ Host ++ ":" ++ erlang:integer_to_list(Port) ++ "/" ++ blockade_path().
 
