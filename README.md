@@ -1,2 +1,9 @@
-# blockaderl
-Blockade docker API wrapper written in Erlang
+blockaderl
+=====
+
+An OTP application
+
+Build
+-----
+
+    $ rebar3 compile
