@@ -7,3 +7,6 @@ Build
 -----
 
     $ rebar3 compile
+
+# run blockade
+blockade -d .blockade/ daemon
