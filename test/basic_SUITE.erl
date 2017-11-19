@@ -33,6 +33,6 @@ basic(_Config) ->
          }
        }
      },
-    blockaderl:create("localhost", 5000, "a", BlockadeContainers),
-    blockaderl:delete("localhost", 5000, "a"),
+    ok = blockaderl:create("localhost", 5000, "a", BlockadeContainers),
+    ok = blockaderl:delete("localhost", 5000, "a"),
     ok.
